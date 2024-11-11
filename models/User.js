@@ -8,4 +8,9 @@ const getUser = async (user_name) => {
     return await query('select * from users where user_name = $1', [user_name]);    
 }
 
-export { insertUser, getUser }
+const updateUserStatus = async (user_id, is_confirmed) => {
+    return await query('UPDATE users SET is_confirmed = $1 WHERE user_id = $2', [is_confirmed, user_id]);
+};
+
+
+export { insertUser, getUser, updateUserStatus }

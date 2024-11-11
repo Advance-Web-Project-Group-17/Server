@@ -4,7 +4,8 @@ create table users (
     email varchar(100) unique not null,
     password varchar(255) not null,
     avatar varchar(255),
-    nickName varchar(255)
+    nickName varchar(255),
+    is_confirmed BOOLEAN DEFAULT FALSE
 ) 
 CREATE TABLE groups (
     group_id SERIAL PRIMARY KEY,
