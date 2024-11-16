@@ -27,4 +27,15 @@ const query = (sql, values = []) => {
   });
 };
 
-export { query };
+// In db.js, add a test function to check the connection
+const testDbConnection = async () => {
+  try {
+    const res = await query("SELECT NOW()");
+    console.log("Database connection successful:", res.rows[0]);
+  } catch (error) {
+    console.error("Database connection failed:", error);
+  }
+};
+
+
+export { query, testDbConnection };
