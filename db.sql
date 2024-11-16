@@ -6,7 +6,7 @@ create table users (
     avatar varchar(255),
     nickName varchar(255),
     is_confirmed BOOLEAN DEFAULT FALSE
-) 
+);
 CREATE TABLE groups (
     group_id SERIAL PRIMARY KEY,
     group_name VARCHAR(255) UNIQUE NOT NULL
@@ -26,4 +26,4 @@ create table notification (
 	user_id int not null,
 	content varchar(255),
 	constraint fk_user foreign key (user_id) references users(user_id)
-)
+); 
