@@ -4,33 +4,33 @@
  * Defines routes for movie reviews functionality.
  * 
  * Routes:
- * - POST /reviews: Adds a new review for a movie.
- * - GET /movies/:movieId/reviews: Retrieves all reviews for a specific movie.
+ * - POST /reviews: Adds a new review for a movie. Requires authentication.
+ * - GET /movies/:movieId/reviews: Retrieves all reviews for a specific movie. Publicly accessible.
  * 
  * Imports:
  * - express: Web framework for routing.
  * - postReview, getReviews: Controller functions for review actions.
+ * - authenticateToken: Middleware to validate JWT for authenticated routes.
  */
 
 import express from "express";
 import { postReview, getReviews } from "../controllers/ReviewController.js";
+import { authenticateToken } from "../helpers/authMiddleware.js";
 
 const reviewRouter = express.Router();
 
 /**
- * Route to post a new review
- * @route POST /reviews
- * @access Public (or Private if authMiddleware is enabled)
- * @description Adds a new review for a movie.
+ * POST /reviews
+ * @description Adds a new review for a movie. Requires user authentication.
+ * @access Private
  */
-reviewRouter.post("/reviews", postReview);
+reviewRouter.post("/reviews", authenticateToken, postReview);
 
 /**
- * Route to get reviews for a specific movie
- * @route GET /movies/:movieId/reviews
+ * GET /movies/:movieId/reviews
+ * @description Retrieves all reviews for a specific movie. Publicly accessible.
  * @access Public
- * @description Retrieves all reviews for the specified movie by its ID.
  */
 reviewRouter.get("/movies/:movieId/reviews", getReviews);
 
-export { reviewRouter }
+export { reviewRouter };
