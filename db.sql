@@ -8,9 +8,13 @@ create table users (
     is_confirmed BOOLEAN DEFAULT FALSE
 ) 
 CREATE TABLE groups (
-    group_id SERIAL PRIMARY KEY,
-    group_name VARCHAR(255) UNIQUE NOT NULL
+    group_id SERIAL PRIMARY KEY,                     
+    group_name VARCHAR(255) UNIQUE NOT NULL,         
+    owner_id INT NOT NULL,       
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
+    FOREIGN KEY (owner_id) REFERENCES users(user_id)  
 );
+
 
 CREATE TABLE group_membership (
     user_id INT NOT NULL,
