@@ -87,7 +87,7 @@ export { postRegister, postLogin, confirmUser };*/
 
 
 
-import { insertUser, getUser, updateUserStatus, deleteUserById } from "../models/User.js"; // Import deleteUserById
+/*import { insertUser, getUser, updateUserStatus, deleteUserById } from "../models/User.js"; // Import deleteUserById
 import { compare, hash } from "bcrypt";
 import { ApiError } from "../helpers/ApiError.js";
 import { sendConfirmationEmail } from "../helpers/emailService.js";
@@ -178,7 +178,652 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+export { postRegister, postLogin, confirmUser, deleteUser };*/
+
+
+
+
+/*import { insertUser, getUser, updateUserStatus, deleteUserById } from "../models/User.js"; // Import deleteUserById
+import { compare, hash } from "bcrypt";
+import { ApiError } from "../helpers/ApiError.js";
+import { sendConfirmationEmail } from "../helpers/emailService.js";
+import jwt from "jsonwebtoken";
+const { sign } = jwt;
+
+const postRegister = async (req, res, next) => {
+  try {
+    const { email, user_name, password } = req.body;
+    if (!email || !password || password.length < 8) {
+      return res.status(400).json({ error: "Invalid email or password" });
+    }
+
+    const hashedPassword = await hash(password, 10);
+    const userFromDb = await insertUser(email, user_name, hashedPassword);
+    const user = userFromDb.rows[0];
+
+    // Generate a confirmation token
+    const token = jwt.sign(
+      { id: user.user_id, email },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+    await sendConfirmationEmail(email, token);
+
+    return res.status(201).json({ user_id: user.user_id, user_name: user.user_name });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const confirmUser = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    await updateUserStatus(decoded.id, true); // Updates `is_confirmed` field for user
+    res.status(200).json({ message: "Email confirmed successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Invalid or expired confirmation link." });
+  }
+};
+
+const createUserObject = (user_id, token = undefined) => {
+  return {
+    id: user_id,
+    ...(token !== undefined && { token: token }),
+  };
+};
+
+const postLogin = async (req, res, next) => {
+  const invalid_credential_message = "Invalid credentials!";
+  try {
+    const userFromDb = await getUser(req.body.user_name);
+    if (userFromDb.rows.length === 0)
+      return next(new ApiError(invalid_credential_message, 401));
+
+    const user = userFromDb.rows[0];
+    if (!user.is_confirmed) {
+      return res
+        .status(403)
+        .json({ message: "Please confirm your email before logging in." });
+    }
+
+    if (!(await compare(req.body.password, user.password)))
+      return next(new ApiError("Wrong password", 401));
+
+    const token = sign(req.body.user_name, process.env.JWT_SECRET_KEY);
+    return res.status(200).json(createUserObject(user.user_id, token));
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.body.id || req.user.id; // Read user ID from request body or authentication middleware
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    await deleteUserById(userId);
+    res.status(200).json({ message: "User account and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    next(error);
+  }
+};
+
+export { postRegister, postLogin, confirmUser, deleteUser };*/
+
+
+
+
+/*import { insertUser, getUser, updateUserStatus, deleteUserById } from "../models/User.js";
+import { compare, hash } from "bcrypt";
+import { ApiError } from "../helpers/ApiError.js";
+import { sendConfirmationEmail } from "../helpers/emailService.js";
+import jwt from "jsonwebtoken";
+const { sign } = jwt;
+
+const postRegister = async (req, res, next) => {
+  try {
+    const { email, user_name, password } = req.body;
+    if (!email || !password || password.length < 8) {
+      return res.status(400).json({ error: "Invalid email or password" });
+    }
+
+    const hashedPassword = await hash(password, 10);
+    const userFromDb = await insertUser(email, user_name, hashedPassword);
+    const user = userFromDb.rows[0];
+
+    // Generate a confirmation token
+    const token = jwt.sign(
+      { id: user.user_id, email },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+    await sendConfirmationEmail(email, token);
+
+    return res.status(201).json({ user_id: user.user_id, user_name: user.user_name });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const confirmUser = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    await updateUserStatus(decoded.id, true); // Updates `is_confirmed` field for user
+    res.status(200).json({ message: "Email confirmed successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Invalid or expired confirmation link." });
+  }
+};
+
+const createUserObject = (user_id, token = undefined) => {
+  return {
+    id: user_id,
+    ...(token !== undefined && { token: token }),
+  };
+};
+
+const postLogin = async (req, res, next) => {
+  const invalid_credential_message = "Invalid credentials!";
+  try {
+    const userFromDb = await getUser(req.body.user_name);
+    if (userFromDb.rows.length === 0)
+      return next(new ApiError(invalid_credential_message, 401));
+
+    const user = userFromDb.rows[0];
+    if (!user.is_confirmed) {
+      return res
+        .status(403)
+        .json({ message: "Please confirm your email before logging in." });
+    }
+
+    if (!(await compare(req.body.password, user.password)))
+      return next(new ApiError("Wrong password", 401));
+
+    const token = sign(req.body.user_name, process.env.JWT_SECRET_KEY);
+    return res.status(200).json(createUserObject(user.user_id, token));
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.body.id || req.user.id; // Read user ID from request body or authentication middleware
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    await deleteUserById(userId);
+    res.status(200).json({ message: "User account and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    next(error);
+  }
+};
+
+export { postRegister, postLogin, confirmUser, deleteUser };*/
+
+
+/*import { insertUser, getUser, updateUserStatus, deleteUserById } from "../models/User.js";
+import { compare, hash } from "bcrypt";
+import { ApiError } from "../helpers/ApiError.js";
+import { sendConfirmationEmail } from "../helpers/emailService.js";
+import jwt from "jsonwebtoken";
+const { sign } = jwt;
+
+const postRegister = async (req, res, next) => {
+  try {
+    const { email, user_name, password } = req.body;
+    if (!email || !password || password.length < 8) {
+      return res.status(400).json({ error: "Invalid email or password" });
+    }
+
+    const hashedPassword = await hash(password, 10);
+    const userFromDb = await insertUser(email, user_name, hashedPassword);
+    const user = userFromDb.rows[0];
+
+    // Generate a confirmation token
+    const token = jwt.sign(
+      { id: user.user_id, email },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+    await sendConfirmationEmail(email, token);
+
+    return res.status(201).json({ user_id: user.user_id, user_name: user.user_name });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const confirmUser = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    await updateUserStatus(decoded.id, true); // Updates `is_confirmed` field for user
+    res.status(200).json({ message: "Email confirmed successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Invalid or expired confirmation link." });
+  }
+};
+
+const createUserObject = (user_id, token = undefined) => {
+  return {
+    id: user_id,
+    ...(token !== undefined && { token: token }),
+  };
+};
+
+const postLogin = async (req, res, next) => {
+  const invalid_credential_message = "Invalid credentials!";
+  try {
+    const userFromDb = await getUser(req.body.user_name);
+    if (userFromDb.rows.length === 0)
+      return next(new ApiError(invalid_credential_message, 401));
+
+    const user = userFromDb.rows[0];
+    if (!user.is_confirmed) {
+      return res
+        .status(403)
+        .json({ message: "Please confirm your email before logging in." });
+    }
+
+    if (!(await compare(req.body.password, user.password)))
+      return next(new ApiError("Wrong password", 401));
+
+    const token = sign({ user_name: req.body.user_name }, process.env.JWT_SECRET_KEY);
+    return res.status(200).json(createUserObject(user.user_id, token));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" }); // Ensure proper error handling
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.body.id || req.user.id; // Read user ID from request body or authentication middleware
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    await deleteUserById(userId);
+    res.status(200).json({ message: "User account and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    next(error);
+  }
+};
+
+export { postRegister, postLogin, confirmUser, deleteUser };*/
+
+
+
+
+
+/*import { insertUser, getUser, updateUserStatus, deleteUserById } from "../models/User.js";
+import { compare, hash } from "bcrypt";
+import { ApiError } from "../helpers/ApiError.js";
+import { sendConfirmationEmail } from "../helpers/emailService.js";
+import jwt from "jsonwebtoken";
+const { sign } = jwt;
+
+const postRegister = async (req, res, next) => {
+  try {
+    const { email, user_name, password } = req.body;
+    if (!email || !password || password.length < 8) {
+      return res.status(400).json({ error: "Invalid email or password" });
+    }
+
+    const hashedPassword = await hash(password, 10);
+    const userFromDb = await insertUser(email, user_name, hashedPassword);
+    const user = userFromDb.rows[0];
+
+    // Generate a confirmation token
+    const token = jwt.sign(
+      { id: user.user_id, email },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+    await sendConfirmationEmail(email, token);
+
+    return res.status(201).json({ user_id: user.user_id, user_name: user.user_name });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const confirmUser = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    await updateUserStatus(decoded.id, true); // Updates `is_confirmed` field for user
+    res.status(200).json({ message: "Email confirmed successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Invalid or expired confirmation link." });
+  }
+};
+
+const createUserObject = (user_id, token = undefined) => {
+  return {
+    id: user_id,
+    ...(token !== undefined && { token: token }),
+  };
+};
+
+const postLogin = async (req, res, next) => {
+  const invalid_credential_message = "Invalid credentials!";
+  try {
+    const userFromDb = await getUser(req.body.user_name);
+    if (userFromDb.rows.length === 0) {
+      return res.status(401).json({ error: invalid_credential_message });
+    }
+
+    const user = userFromDb.rows[0];
+    if (!user.is_confirmed) {
+      return res.status(403).json({ message: "Please confirm your email before logging in." });
+    }
+
+    const isPasswordMatch = await compare(req.body.password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(401).json({ error: "Wrong password" });
+    }
+
+    const token = sign({ user_name: req.body.user_name }, process.env.JWT_SECRET_KEY);
+    return res.status(200).json(createUserObject(user.user_id, token));
+  } catch (error) {
+    console.error("Internal server error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.body.id || req.user.id; // Read user ID from request body or authentication middleware
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    await deleteUserById(userId);
+    res.status(200).json({ message: "User account and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    next(error);
+  }
+};
+
+export { postRegister, postLogin, confirmUser, deleteUser };*/
+
+
+/*import { insertUser, getUser, updateUserStatus, deleteUserById } from "../models/User.js";
+import { compare, hash } from "bcrypt";
+import { ApiError } from "../helpers/ApiError.js";
+import { sendConfirmationEmail } from "../helpers/emailService.js";
+import jwt from "jsonwebtoken";
+const { sign } = jwt;
+
+const postRegister = async (req, res, next) => {
+  try {
+    const { email, user_name, password } = req.body;
+    if (!email || !password || password.length < 8) {
+      return res.status(400).json({ error: "Invalid email or password" });
+    }
+
+    // Hash the password
+    const hashedPassword = await hash(password, 10);
+
+    // Insert user into the database
+    const userFromDb = await insertUser(email, user_name, hashedPassword);
+    const user = userFromDb.rows[0];
+
+    // Generate a confirmation token
+    const token = jwt.sign(
+      { id: user.user_id, email },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+
+    // Send confirmation email with the token
+    await sendConfirmationEmail(email, token);
+
+    return res.status(201).json({ user_id: user.user_id, user_name: user.user_name });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const confirmUser = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    // Update user's confirmation status in the database
+    await updateUserStatus(decoded.id, true); // Updates `is_confirmed` field for user
+    res.status(200).json({ message: "Email confirmed successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Invalid or expired confirmation link." });
+  }
+};
+
+const createUserObject = (user_id, token = undefined) => {
+  return {
+    id: user_id,
+    ...(token !== undefined && { token: token }),
+  };
+};
+
+// Helper function to generate JWT token
+const generateToken = (user) => {
+  const payload = {
+    id: user.user_id,          // User ID from the database
+    user_name: user.user_name, // Username or any unique identifier
+  };
+
+  const secretKey = process.env.JWT_SECRET_KEY; // Secret key from environment variable
+  const expiresIn = '1h';  // Token expiration time (1 hour)
+
+  // Create and return the token
+  return jwt.sign(payload, secretKey, { expiresIn });
+};
+
+const postLogin = async (req, res, next) => {
+  const invalid_credential_message = "Invalid credentials!";
+  try {
+    // Check if the user exists in the database
+    const userFromDb = await getUser(req.body.user_name);
+    if (userFromDb.rows.length === 0) {
+      return res.status(401).json({ error: invalid_credential_message });
+    }
+
+    const user = userFromDb.rows[0];
+
+    // Check if the email is confirmed
+    if (!user.is_confirmed) {
+      return res.status(403).json({ message: "Please confirm your email before logging in." });
+    }
+
+    // Compare the password
+    const isPasswordMatch = await compare(req.body.password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(401).json({ error: "Wrong password" });
+    }
+
+    // Generate the token after successful login
+    const token = generateToken(user);
+
+    return res.status(200).json({
+      message: "Login successful",
+      user_id: user.user_id,
+      user_name: user.user_name,
+      token: token, // Send the token in the response
+    });
+  } catch (error) {
+    console.error("Internal server error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.body.id || req.user.id; // Read user ID from request body or authentication middleware
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    await deleteUserById(userId);
+    res.status(200).json({ message: "User account and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    next(error);
+  }
+};
+
+export { postRegister, postLogin, confirmUser, deleteUser };*/
+
+import { insertUser, getUser, updateUserStatus, deleteUserById } from "../models/User.js";
+import { compare, hash } from "bcrypt";
+import { ApiError } from "../helpers/ApiError.js";
+import { sendConfirmationEmail } from "../helpers/emailService.js";
+import jwt from "jsonwebtoken";
+const { sign } = jwt;
+
+const postRegister = async (req, res, next) => {
+  try {
+    const { email, user_name, password } = req.body;
+    if (!email || !password || password.length < 8) {
+      return res.status(400).json({ error: "Invalid email or password" });
+    }
+
+    // Hash the password
+    const hashedPassword = await hash(password, 10);
+
+    // Insert user into the database
+    const userFromDb = await insertUser(email, user_name, hashedPassword);
+    const user = userFromDb.rows[0];
+
+    // Generate a confirmation token
+    const token = jwt.sign(
+      { id: user.user_id, email },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+
+    // Send confirmation email with the token
+    await sendConfirmationEmail(email, token);
+
+    return res.status(201).json({ user_id: user.user_id, user_name: user.user_name });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const confirmUser = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    // Update user's confirmation status in the database
+    await updateUserStatus(decoded.id, true); // Updates `is_confirmed` field for user
+    res.status(200).json({ message: "Email confirmed successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Invalid or expired confirmation link." });
+  }
+};
+
+// Helper function to generate JWT token
+const generateToken = (user) => {
+  const payload = {
+    id: user.user_id,          // User ID from the database
+    user_name: user.user_name, // Username or any unique identifier
+  };
+
+  const secretKey = process.env.JWT_SECRET_KEY; // Secret key from environment variable
+  const expiresIn = '1h';  // Token expiration time (1 hour)
+
+  // Create and return the token
+  return jwt.sign(payload, secretKey, { expiresIn });
+};
+
+const postLogin = async (req, res, next) => {
+  const invalid_credential_message = "Invalid credentials!";
+  try {
+    // Check if the user exists in the database
+    const userFromDb = await getUser(req.body.user_name);
+    if (userFromDb.rows.length === 0) {
+      return res.status(401).json({ error: invalid_credential_message });
+    }
+
+    const user = userFromDb.rows[0];
+
+    // Check if the email is confirmed
+    if (!user.is_confirmed) {
+      return res.status(403).json({ message: "Please confirm your email before logging in." });
+    }
+
+    // Compare the password
+    const isPasswordMatch = await compare(req.body.password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(401).json({ error: "Wrong password" });
+    }
+
+    // Generate the token after successful login
+    const token = generateToken(user);
+
+    return res.status(200).json({
+      message: "Login successful",
+      user_id: user.user_id,
+      user_name: user.user_name,
+      token: token, // Send the token in the response
+    });
+  } catch (error) {
+    console.error("Internal server error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.body.userId || req.user.id; // Read user ID from request body or authentication middleware
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    await deleteUserById(userId);
+    res.status(200).json({ message: "User account and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    next(error);
+  }
+};
+
 export { postRegister, postLogin, confirmUser, deleteUser };
+
+
+
+
+
 
 
 

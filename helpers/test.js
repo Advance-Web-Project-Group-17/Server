@@ -25,7 +25,7 @@ export { initializeTestDb, insertUser }*/
 //added a deleteTestUser function to test.js
 
 
-import fs from 'fs';
+/*import fs from 'fs';
 import path from 'path';
 import { query } from './db.js';
 import { hash } from "bcrypt";
@@ -34,7 +34,7 @@ const _dirname = path.resolve();
 
 // Function to initialize the test database
 const initializeTestDb = () => {
-    const sql = fs.readFileSync(path.resolve(_dirname, '../db.sql'), 'utf-8');
+    const sql = fs.readFileSync(path.resolve(_dirname, './db.sql'), 'utf-8');
     query(sql);
 };
 
@@ -50,7 +50,125 @@ const deleteTestUser = (userId) => {
     return query('DELETE FROM account WHERE id = $1', [userId]);
 };
 
+export { initializeTestDb, insertUser, deleteTestUser };*/
+
+
+/*import fs from 'fs';
+import path from 'path';
+import { query } from './db.js';
+import { hash } from "bcrypt";
+
+const _dirname = path.resolve();
+
+// Function to initialize the test database
+const initializeTestDb = () => {
+    const sql = fs.readFileSync(path.resolve(_dirname, './db.sql'), 'utf-8');
+    query(sql);
+};
+
+// Function to insert a test user
+const insertUser = (email, password, user_name) => {
+    hash(password, 10, (error, hashedPassword) => {
+        query('INSERT INTO users (email, user_name, password) VALUES ($1, $2, $3)', [email, user_name, hashedPassword]);
+    });
+};
+
+// Function to delete a test user
+const deleteTestUser = (userId) => {
+    return query('DELETE FROM users WHERE user_id = $1', [userId]);
+};
+
+export { initializeTestDb, insertUser, deleteTestUser };*/
+
+
+/*import fs from 'fs';
+import path from 'path';
+import { query } from './db.js';
+import { hash } from "bcrypt";
+
+const _dirname = path.resolve();
+
+// Function to initialize the test database
+const initializeTestDb = async () => {
+    try {
+        const sql = fs.readFileSync(path.resolve(_dirname, './db.sql'), 'utf-8');
+        await query(sql);  // Ensure it's run asynchronously
+    } catch (error) {
+        console.error('Error initializing test database:', error);
+    }
+};
+
+// Function to insert a test user
+const insertUser = async (email, password, user_name) => {
+    try {
+        const hashedPassword = await hash(password, 10);  // Using async/await for password hashing
+        await query('INSERT INTO users (email, user_name, password) VALUES ($1, $2, $3)', [email, user_name, hashedPassword]);
+    } catch (error) {
+        console.error('Error inserting test user:', error);
+    }
+};
+
+// Function to delete a test user
+const deleteTestUser = async (userId) => {
+    try {
+        // Delete associated ratings and reviews if needed
+        await query('UPDATE reviews SET user_id = NULL WHERE user_id = $1', [userId]);  // Make reviews anonymous
+        await query('UPDATE ratings SET user_id = NULL WHERE user_id = $1', [userId]);  // Make ratings anonymous
+        return await query('DELETE FROM users WHERE user_id = $1', [userId]);
+    } catch (error) {
+        console.error('Error deleting test user:', error);
+    }
+};
+
+export { initializeTestDb, insertUser, deleteTestUser };*/
+
+
+
+import fs from 'fs';
+import path from 'path';
+import { query } from './db.js';
+import { hash } from "bcrypt";
+
+const _dirname = path.resolve();
+
+// Function to initialize the test database
+const initializeTestDb = async () => {
+    try {
+        const sql = fs.readFileSync(path.resolve(_dirname, './db.sql'), 'utf-8');
+        await query(sql);  // Ensure it's run asynchronously
+    } catch (error) {
+        console.error('Error initializing test database:', error);
+    }
+};
+
+// Function to insert a test user
+const insertUser = async (email, password, user_name) => {
+    try {
+        const hashedPassword = await hash(password, 10);  // Using async/await for password hashing
+        await query('INSERT INTO users (email, user_name, password) VALUES ($1, $2, $3)', [email, user_name, hashedPassword]);
+    } catch (error) {
+        console.error('Error inserting test user:', error);
+    }
+};
+
+// Function to delete a test user
+const deleteTestUser = async (userId) => {
+    try {
+        // Make reviews and ratings anonymous (set user_id to NULL)
+        await query('UPDATE reviews SET user_id = NULL WHERE user_id = $1', [userId]);  // Set user_id to NULL in reviews
+        await query('UPDATE ratings SET user_id = NULL WHERE user_id = $1', [userId]);  // Set user_id to NULL in ratings
+
+        // Delete the user
+        return await query('DELETE FROM users WHERE user_id = $1', [userId]);
+    } catch (error) {
+        console.error('Error deleting test user:', error);
+    }
+};
+
 export { initializeTestDb, insertUser, deleteTestUser };
+
+
+
 
 
 
