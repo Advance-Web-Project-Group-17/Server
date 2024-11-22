@@ -26,4 +26,16 @@ create table notification (
 	user_id int not null,
 	content varchar(255),
 	constraint fk_user foreign key (user_id) references users(user_id)
-)
+);
+
+CREATE TABLE reviews (
+    review_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    tmdb_id INT NOT NULL,
+    review_text TEXT NOT NULL,                        
+    rating INT CHECK (rating >= 1 AND rating <= 5),
+    reviewer_email VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
