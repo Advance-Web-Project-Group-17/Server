@@ -30,4 +30,14 @@ create table notification (
 	user_id int not null,
 	content varchar(255),
 	constraint fk_user foreign key (user_id) references users(user_id)
-)
+);
+CREATE TABLE group_join_requests (
+    request_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    group_id INT NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',  -- status can be 'pending', 'accepted', or 'rejected'
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES groups(group_id)
+);
+
