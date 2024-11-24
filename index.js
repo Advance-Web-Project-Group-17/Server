@@ -3,6 +3,7 @@ import express from "express"
 import cors from "cors"
 import { userRouter } from "./routes/user.js"
 import { reviewRouter } from "./routes/review.js"
+import { searchRouter } from "./routes/search.js"
 
 const environment = process.env.NODE_ENV;
 dotenv.config();
@@ -14,7 +15,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/user', userRouter);
-app.use("/", reviewRouter);
+app.use("/movie", reviewRouter);
+app.use("/movie", searchRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
