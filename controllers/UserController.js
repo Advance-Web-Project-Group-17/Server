@@ -1,4 +1,4 @@
-import { insertUser, getUser, updateUserStatus } from "../models/User.js";
+import { insertUser, getUser, updateUserStatus, deleteUserById } from "../models/User.js";
 import { compare, hash } from "bcrypt";
 import { ApiError } from "../helpers/ApiError.js";
 import { sendConfirmationEmail } from "../helpers/emailService.js";
@@ -78,4 +78,21 @@ const postLogin = async (req, res, next) => {
   }
 };
 
-export { postRegister, postLogin, confirmUser };
+const deleteUser = async (req, res, next) => {
+  try {
+    const { user_id } = req.params;
+    if (!user_id) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+    const result = await deleteUserById(user_id);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    next(error); // Pass error to error handler middleware
+  }
+};
+
+export { postRegister, postLogin, confirmUser, deleteUser };
