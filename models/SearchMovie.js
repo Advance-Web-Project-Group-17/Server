@@ -10,58 +10,47 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
  */
 const searchMoviesByCriteria = async (title, genre, release_year, rating) => {
   try {
-    // Fetch genre mapping
     const genreMap = await fetchGenreMap();
+    let movies = [];
 
-    // Build query parameters for TMDB API
-    const params = {
-      api_key: TMDB_API_KEY,
-      query: title || '',
-      year: release_year || '',
-    };
+    if (title) {
+      // Search movies by title
+      movies = await fetchMoviesByTitle(title);
+    } else {
+      // Fetch movies from TMDB discover API
+      const params = {
+        api_key: TMDB_API_KEY,
+        year: release_year || '',
+      };
 
-    console.log('Constructed TMDB API params:', params);
+      const response = await axios.get(`${TMDB_BASE_URL}/discover/movie`, { params });
 
-    // Fetch movies from TMDB API
-    const response = await axios.get(`${TMDB_BASE_URL}/discover/movie`, { params });
+      if (response.status !== 200) {
+        throw new Error(`TMDB API error: ${response.statusText}`);
+      }
 
-    if (response.status !== 200) {
-      throw new Error(`TMDB API error: ${response.statusText}`);
+      movies = response.data.results || [];
     }
-
-    let movies = response.data.results || [];
-    console.log(`Fetched ${movies.length} movies from TMDB.`);
 
     // Apply genre filter
     if (genre) {
       const genreId = getGenreIdByName(genre, genreMap);
-      console.log(`Genre: ${genre}, Resolved Genre ID: ${genreId}`);
       if (genreId) {
-        movies = movies.filter(movie => {
-          console.log(`Checking movie: ${movie.title}, Genre IDs: ${movie.genre_ids}`);
-          return movie.genre_ids.includes(genreId);
-        });
-      } else {
-        console.log(`No matching genre ID found for genre: ${genre}`);
+        movies = movies.filter(movie => movie.genre_ids.includes(genreId));
       }
     }
 
     // Apply release year filter
     if (release_year) {
-      console.log(`Filtering by release year: ${release_year}`);
       movies = movies.filter(movie => {
-        if (!movie.release_date) {
-          return false; // Skip movies with no release date
-        }
+        if (!movie.release_date) return false;
         const movieYear = new Date(movie.release_date).getFullYear();
-        console.log(`Movie: ${movie.title}, Release Year: ${movieYear}`);
         return movieYear === parseInt(release_year, 10);
       });
     }
 
     // Apply rating filter
     if (rating) {
-      console.log(`Filtering by rating >= ${rating}`);
       movies = movies.filter(movie => movie.vote_average >= parseFloat(rating));
     }
 
@@ -77,19 +66,40 @@ const searchMoviesByCriteria = async (title, genre, release_year, rating) => {
 };
 
 /**
+ * Fetches movies by title using the search/movie endpoint.
+ */
+const fetchMoviesByTitle = async (title) => {
+  try {
+    const response = await axios.get(`${TMDB_BASE_URL}/search/movie`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        query: title,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(`TMDB API error: ${response.statusText}`);
+    }
+
+    return response.data.results || [];
+  } catch (error) {
+    console.error('Error fetching movies by title:', error.message);
+    throw error;
+  }
+};
+
+/**
  * Fetches and constructs a map of genre IDs to names.
  */
 const fetchGenreMap = async () => {
   try {
-    const response = await axios.get(`${TMDB_BASE_URL}/genre/movie/list?language=en`, {
+    const response = await axios.get(`${TMDB_BASE_URL}/genre/movie/list`, {
       params: { api_key: TMDB_API_KEY },
     });
 
     if (response.status !== 200) {
       throw new Error('Failed to fetch genres');
     }
-
-    console.log('Fetched genres:', response.data.genres);
 
     return response.data.genres.reduce((map, genre) => {
       map[genre.id] = genre.name;
