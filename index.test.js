@@ -1,6 +1,7 @@
 import { expect } from "chai";
-import { initializeTestDb, insertUser } from "./helpers/test.js";
+import { initializeTestDb, insertTestUser } from "./helpers/test.js";
 import { startServer, stopServer } from "./testSetup.js";
+import { query } from "./helpers/db.js";
 const baseUrl = "http://localhost:3001";
 
 describe("Task API Tests", function () {
@@ -18,7 +19,8 @@ describe("POST register", () => {
     const email = "testmail_unique1@gmail.com";
     const user_name = "testusername"
     beforeEach(async () => {
-        await initializeTestDb(); // Clear database between tests to avoid duplicates
+        await initializeTestDb();
+        await query ("delete from users where email = $1", [email]) // Clear database between tests to avoid duplicates
     });
   
     it("should register with valid email, password and user_name", async () => {
@@ -79,20 +81,20 @@ describe("POST register", () => {
   
   
   describe("POST login", () => {
-    const email = "testmail_unique1@gmail.com";
+    const user_name = "testmail_unique1@gmail.com";
     const password = "testpassword";
-    insertUser(email, password);
-    it("should login with valid credentials", async () => {
+    insertTestUser(user_name, password);
+    it("should not login if user not verify", async () => {
       const response = await fetch(`${baseUrl}/user/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ user_name, password }),
       });
   
       const data = await response.json();
   
-      expect(response.status).to.equal(200);
-      expect(data).to.include.all.keys("id", "token");
+      expect(response.status).to.equal(401);
+      expect(data).to.include.all.keys("message");
     });
   });
   

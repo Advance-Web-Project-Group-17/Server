@@ -1,4 +1,9 @@
-import { insertUser, getUser, updateUserStatus, deleteUserById } from "../models/User.js";
+import {
+  insertUser,
+  getUser,
+  updateUserStatus,
+  deleteUserById,
+} from "../models/User.js";
 import { compare, hash } from "bcrypt";
 import { ApiError } from "../helpers/ApiError.js";
 import { sendConfirmationEmail } from "../helpers/emailService.js";
@@ -26,7 +31,11 @@ const postRegister = async (req, res, next) => {
 
     return res
       .status(201)
-      .json({ message: "Registration successful. Please confirm your email." });
+      .json({
+        message: "Registration successful. Please confirm your email.",
+        user_id: user.user_id,
+        user_name: user.user_name,
+      });
   } catch (error) {
     console.error(error);
     next(error);
@@ -66,7 +75,7 @@ const postLogin = async (req, res, next) => {
         .status(403)
         .json({ message: "Please confirm your email before logging in." });
     }
-    
+
     if (!(await compare(req.body.password, user.password)))
       return next(new ApiError("Wrong password", 401));
 
