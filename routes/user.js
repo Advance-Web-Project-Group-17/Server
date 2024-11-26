@@ -1,5 +1,5 @@
 import express from "express"
-import { postRegister, postLogin, confirmUser, deleteUser } from "../controllers/UserController.js";
+import { postRegister, postLogin, confirmUser, deleteUser, getUserProfile, editUserProfile } from "../controllers/UserController.js";
 
 const userRouter = express.Router();
 
@@ -14,5 +14,11 @@ userRouter.get("/confirm/:token", confirmUser);
 
 //Delete user
 userRouter.delete("/delete/:user_id", deleteUser);
+
+//Get user's profile
+userRouter.get("/profile/:user_id", getUserProfile);
+
+//Edit user's profile
+userRouter.put("/profile/edit/:user_id", editUserProfile);
 
 export { userRouter };
