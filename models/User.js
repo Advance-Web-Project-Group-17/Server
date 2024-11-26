@@ -8,6 +8,10 @@ const getUser = async (user_name) => {
     return await query('select * from users where user_name = $1', [user_name]);    
 }
 
+const getUserId = async (user_id) => {
+    return await query('select * from users where user_id = $1', [user_id]);
+}
+
 const updateUserStatus = async (user_id, is_confirmed) => {
     return await query('UPDATE users SET is_confirmed = $1 WHERE user_id = $2', [is_confirmed, user_id]);
 };
@@ -22,4 +26,8 @@ const deleteUserById = async (user_id) => {
     return await query("DELETE FROM users WHERE user_id = $1", [user_id]);
   };
 
-export { insertUser, getUser, updateUserStatus, deleteUserById }
+const updateUserProfile = async (user_id, location, nick_name) => {
+    await query("update users set location = $1, nick_name = $2 where user_id = $3", [location, nick_name, user_id])
+}
+
+export { insertUser, getUser, updateUserStatus, deleteUserById, getUserId, updateUserProfile }
