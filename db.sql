@@ -7,7 +7,6 @@ create table users (
     nick_name varchar(255),
     is_confirmed BOOLEAN DEFAULT FALSE,
     location varchar(50),
-    is_admin BOOLEAN DEFAULT FALSE
 ) 
 CREATE TABLE groups (
     group_id SERIAL PRIMARY KEY,
@@ -18,6 +17,7 @@ CREATE TABLE group_membership (
     user_id INT NOT NULL,
     group_id INT NOT NULL,
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_admin BOOLEAN DEFAULT FALSE,
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id),
     CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES groups(group_id),
     PRIMARY KEY (group_id, user_id)
@@ -41,3 +41,12 @@ CREATE TABLE reviews (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+create table group_movie (
+	group_id int not null,
+	user_id int not null,
+	movie_id int unique not null,
+	CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+	CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES groups(group_id),
+	PRIMARY KEY (group_id, user_id)
+)
