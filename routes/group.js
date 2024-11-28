@@ -1,5 +1,5 @@
 import express from "express"
-import { createGroup, takeAllGroup, takeGroupBasedOnId, deleteGroup, addMemberToGroup, removeMemberFromGroup, grantMemberAdmin, addMovieToGroup, getGroupMovies, deleteMove } from "../controllers/GroupController.js";
+import { createGroup, takeAllGroup, takeGroupBasedOnId, deleteGroup, addMemberToGroup, removeMemberFromGroup, grantMemberAdmin, addMovieToGroup, getGroupMovies, deleteMove, takeMemberName } from "../controllers/GroupController.js";
 
 const groupRouter = express.Router();
 
@@ -20,6 +20,9 @@ groupRouter.post("/addMember", addMemberToGroup);
 
 //Remove member from group
 groupRouter.delete("/removeMember", removeMemberFromGroup);
+
+//Get member
+groupRouter.get("/getMember/:group_id", takeMemberName);
 
 //Grant member admin
 groupRouter.put("/grantAdmin/:group_id", grantMemberAdmin);

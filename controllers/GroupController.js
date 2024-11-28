@@ -9,7 +9,8 @@ import {
   checkAdmin,
   checkMember,
   getMovie,
-  removeMovie
+  removeMovie,
+  getMember
 } from "../models/GroupModel.js";
 import axios from "axios";
 
@@ -251,4 +252,15 @@ export const deleteMove = async (req, res, next) => {
     console.log(error)
     next(error)
   } 
+}
+
+export const takeMemberName = async(req, res, next) => {
+  try{
+    const {group_id} = req.params;
+    const response = await getMember(group_id);
+    res.status(200).json(response.rows)
+  }catch(error){
+    console.log(error)
+    next(error)
+  }
 }

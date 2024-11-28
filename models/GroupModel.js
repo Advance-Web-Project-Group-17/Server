@@ -24,6 +24,11 @@ const addMember = async (group_id, user_id) => {
     return await query("insert into group_membership (group_id, user_id) values ($1, $2)", [group_id, user_id])
 }
 
+//Get member
+const getMember = async (group_id) => {
+    return await query("select users.nick_name from users join group_membership on users.user_id=group_membership.user_id");
+}
+
 //Admid member
 const adminMember = async (user_id) => {
     return await query("update group_membership set is_admin = true where user_id = $1 returning user_id", [user_id])
@@ -59,4 +64,4 @@ const removeMovie = async (group_id, movie_id) => {
     return await query("delete from group_movie where group_id = $1 and movie_id = $2 returning group_id", [group_id, movie_id])
 }
 
-export {getGroup, addGroup, addMember, removeMember, removeGroup, addMovie, adminMember, checkAdmin, checkMember, getMovie, removeMovie}
+export {getGroup, addGroup, addMember, removeMember, removeGroup, addMovie, adminMember, checkAdmin, checkMember, getMovie, removeMovie, getMember}
