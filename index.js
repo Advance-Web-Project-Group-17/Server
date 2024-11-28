@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use('/user', userRouter);
 app.use("/movie", reviewRouter);
-app.use("/movie", searchRouter);
+app.use("/search", searchRouter);
 app.use("/group", groupRouter)
 
 // Error handling middleware
