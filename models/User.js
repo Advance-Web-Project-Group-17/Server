@@ -12,9 +12,21 @@ const getUserId = async (user_id) => {
     return await query('select * from users where user_id = $1', [user_id]);
 }
 
+const getUserGroup = async(user_id) => {
+    return await query("select * from group_membership where user_id = $1", [user_id])
+}
+
 const updateUserStatus = async (user_id, is_confirmed) => {
     return await query('UPDATE users SET is_confirmed = $1 WHERE user_id = $2', [is_confirmed, user_id]);
 };
+
+const checkNumberAdmin = async (group_id) => {
+    return await query("select count(user_id) from group_membership where group_id = $1 and is_admin = true ", [group_id])
+}
+
+const checkIsAdmin = async(user_id) => {
+    return await query("select is_admin from group_membership where user_id = $1", [user_id])
+}
 
 const deleteUserById = async (user_id) => {
     // Delete related records first to ensure foreign key constraints are not violated
@@ -30,4 +42,4 @@ const updateUserProfile = async (user_id, location, nick_name) => {
     await query("update users set location = $1, nick_name = $2 where user_id = $3", [location, nick_name, user_id])
 }
 
-export { insertUser, getUser, updateUserStatus, deleteUserById, getUserId, updateUserProfile }
+export { insertUser, getUser, updateUserStatus, deleteUserById, getUserId, updateUserProfile, getUserGroup, checkIsAdmin, checkNumberAdmin }

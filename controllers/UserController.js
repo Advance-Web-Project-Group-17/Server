@@ -4,7 +4,10 @@ import {
   updateUserStatus,
   deleteUserById,
   getUserId,
-  updateUserProfile
+  updateUserProfile,
+  checkNumberAdmin,
+  getUserGroup,
+  checkIsAdmin
 } from "../models/User.js";
 import { compare, hash } from "bcrypt";
 import { ApiError } from "../helpers/ApiError.js";
@@ -90,14 +93,35 @@ const postLogin = async (req, res, next) => {
 const deleteUser = async (req, res, next) => {
   try {
     const { user_id } = req.params;
+
     if (!user_id) {
       return res.status(400).json({ message: "User ID is required" });
     }
-    const result = await deleteUserById(user_id);
-    if (result.rowCount === 0) {
-      return res.status(404).json({ message: "User not found" });
+    const resultGetUserGroup = await getUserGroup(user_id);
+    const group_id = resultGetUserGroup.rows[0].group_id;
+    if (!group_id) {
+      await deleteUserById(user_id);
+      return res
+        .status(200)
+        .json({ message: "User deleted successfully" });
+    } else {
+      const resultCheckAdmin = await checkNumberAdmin(group_id);
+      const resultCheckIsAdmin = await checkIsAdmin(user_id);
+      if(resultCheckIsAdmin.rows[0].is_admin === true){
+        if (resultCheckAdmin.rows[0].count > 1) {
+          const result = await deleteUserById(user_id);
+          if (result.rowCount === 0) {
+            return res.status(404).json({ message: "User not found" });
+          }
+          res.status(200).json({ message: "User deleted successfully" });
+        } else {
+          return res.status(400).json({ message: "Admin cannot be deleted" });
+        }
+      }else{
+        await deleteUserById(user_id);
+        res.status(200).json({message: "User deleted successfully"})
+      }
     }
-    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     console.error(error);
     next(error); // Pass error to error handler middleware
@@ -115,21 +139,19 @@ const getUserProfile = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
     const user = result.rows[0];
-    res
-      .status(200)
-      .json({
-        message: "User found",
-        user_name: user.user_name,
-        nick_name: user.nick_name,
-        location: user.location
-      });
+    res.status(200).json({
+      message: "User found",
+      user_name: user.user_name,
+      nick_name: user.nick_name,
+      location: user.location,
+    });
   } catch (error) {
     console.error(error);
     next(error);
   }
 };
 
-const editUserProfile = async(req, res, next) => {
+const editUserProfile = async (req, res, next) => {
   try {
     const { user_id } = req.params;
     if (!user_id) {
@@ -142,6 +164,13 @@ const editUserProfile = async(req, res, next) => {
     console.error(error);
     next(error);
   }
-}
+};
 
-export { postRegister, postLogin, confirmUser, deleteUser, getUserProfile, editUserProfile };
+export {
+  postRegister,
+  postLogin,
+  confirmUser,
+  deleteUser,
+  getUserProfile,
+  editUserProfile,
+};
