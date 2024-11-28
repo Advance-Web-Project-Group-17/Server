@@ -7,7 +7,8 @@ import {
   updateUserProfile,
   checkNumberAdmin,
   getUserGroup,
-  checkIsAdmin
+  checkIsAdmin,
+  getGroupName,
 } from "../models/User.js";
 import { compare, hash } from "bcrypt";
 import { ApiError } from "../helpers/ApiError.js";
@@ -98,7 +99,7 @@ const deleteUser = async (req, res, next) => {
       return res.status(400).json({ message: "User ID is required" });
     }
     const resultGetUserGroup = await getUserGroup(user_id);
-    const group_id = resultGetUserGroup.rows[0].group_id;
+    const group_id = resultGetUserGroup.rows[0]?.group_id;
     if (!group_id) {
       await deleteUserById(user_id);
       return res
@@ -131,25 +132,45 @@ const deleteUser = async (req, res, next) => {
 const getUserProfile = async (req, res, next) => {
   try {
     const { user_id } = req.params;
+
+    // Check if user_id is provided
     if (!user_id) {
-      return res.status(400).json({ message: "Fetching user fail" });
+      return res.status(400).json({ message: "User ID is required." });
     }
-    const result = await getUserId(user_id);
-    if (result.rowCount === 0) {
-      return res.status(404).json({ message: "User not found" });
+
+    // Fetch the user's group information
+    const resultGetGroup = await getUserGroup(user_id);
+    const group_id = resultGetGroup.rows[0]?.group_id;
+
+    // Fetch user details
+    const resultUser = await getUserId(user_id);
+    if (resultUser.rowCount === 0) {
+      return res.status(404).json({ message: "User not found." });
     }
-    const user = result.rows[0];
-    res.status(200).json({
-      message: "User found",
+
+    const user = resultUser.rows[0];
+    let response = {
+      message: "User found.",
       user_name: user.user_name,
       nick_name: user.nick_name,
       location: user.location,
-    });
+    };
+
+    // If user belongs to a group, fetch the group name
+    if (group_id) {
+      const resultGetGroupName = await getGroupName(group_id);
+      const groupName = resultGetGroupName.rows[0]?.group_name || "Unknown Group";
+      response.group_name = groupName;
+    }
+
+    // Respond with the user profile
+    return res.status(200).json(response);
   } catch (error) {
-    console.error(error);
-    next(error);
+    console.error("Error fetching user profile:", error);
+    next(error); // Pass the error to error handler middleware
   }
 };
+
 
 const editUserProfile = async (req, res, next) => {
   try {

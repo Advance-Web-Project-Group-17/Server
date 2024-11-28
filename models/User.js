@@ -16,6 +16,10 @@ const getUserGroup = async(user_id) => {
     return await query("select * from group_membership where user_id = $1", [user_id])
 }
 
+const getGroupName = async(group_id) => {
+    return await query("select * from groups where group_id = $1", [group_id])
+}
+
 const updateUserStatus = async (user_id, is_confirmed) => {
     return await query('UPDATE users SET is_confirmed = $1 WHERE user_id = $2', [is_confirmed, user_id]);
 };
@@ -42,4 +46,4 @@ const updateUserProfile = async (user_id, location, nick_name) => {
     await query("update users set location = $1, nick_name = $2 where user_id = $3", [location, nick_name, user_id])
 }
 
-export { insertUser, getUser, updateUserStatus, deleteUserById, getUserId, updateUserProfile, getUserGroup, checkIsAdmin, checkNumberAdmin }
+export { insertUser, getUser, updateUserStatus, deleteUserById, getUserId, updateUserProfile, getUserGroup, checkIsAdmin, checkNumberAdmin, getGroupName }
