@@ -10,7 +10,10 @@ import {
   checkMember,
   getMovie,
   removeMovie,
-  getMember
+  getMember,
+  getUserGroup,
+  addTv,
+  getTv
 } from "../models/GroupModel.js";
 import axios from "axios";
 
@@ -120,6 +123,10 @@ export const removeMemberFromGroup = async (req, res, next) => {
         .json({ message: "group_id, user_id, and removed_id are required" });
     }
 
+    if(removed_id == user_id) {
+      return res.status(400).json({ message: "You cannot remove yourself" });
+    }
+
     // Check if the user is a member of the group
     const resultCheckMember = await checkMember(user_id, group_id);
     if (!resultCheckMember?.rows || resultCheckMember.rows.length === 0) {
@@ -219,28 +226,97 @@ export const addMovieToGroup = async (req, res, next) => {
   }
 };
 
-export const getGroupMovies = async (req, res, next) => {
-  const { group_id } = req.params;
-
+export const addTvShowToGroup = async (req, res, next) => {
   try {
-    const groupMovies = await getMovie(group_id);
-    const movieIds = groupMovies.rows.map((movie) => movie.movie_id);
-
-    const movieDetails = await Promise.all(
-      movieIds.map(async (movieId) => {
-        const response = await axios.get(
-          `https://api.themoviedb.org/3/movie/${movieId}?api_key=${api_key}`
-        );
-        return response.data;
-      })
-    );
-
-    res.status(200).json({ movies: movieDetails });
+    const { group_id, tv_id, user_id } = req.body;
+    const resultCheckMember = await checkMember(user_id, group_id);
+    if (!resultCheckMember?.rows || resultCheckMember.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "User is not a member of the specified group" });
+    }
+    await addTv(group_id, tv_id, user_id);
+    res.status(200).json({ message: "Movie added to group successfully" });
   } catch (error) {
     console.error(error);
     next(error);
   }
 };
+
+
+
+export const getGroupMovies = async (req, res, next) => {
+  const { group_id } = req.params;
+
+  try {
+    // Retrieve the group movies
+    const groupMovies = await getMovie(group_id);
+    const movieIds = groupMovies.rows.map((movie) => movie.movie_id);
+
+    // Fetch details for each movie ID
+    const movieDetails = await Promise.all(
+      movieIds.map(async (movieId) => {
+        try {
+          const response = await axios.get(
+            `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.API_KEY}`
+          );
+          return response.data;
+        } catch (err) {
+          if (err.response && err.response.status === 404) {
+            console.warn(`Movie with ID ${movieId} not found.`);
+            return null; // Skip movie if not found
+          }
+          throw err; // Re-throw for unexpected errors
+        }
+      })
+    );
+
+    // Filter out any null entries (movies not found)
+    const validMovies = movieDetails.filter((movie) => movie !== null);
+
+    res.status(200).json({ movies: validMovies });
+  } catch (error) {
+    console.error('Error fetching group movies:', error.message);
+    next(error);
+  }
+};
+
+export const getGroupTvShow = async (req, res, next) => {
+  const { group_id } = req.params;
+
+  try {
+    // Retrieve the group movies
+    const groupTvShows = await getTv(group_id);
+    const tvShowIds = groupTvShows.rows.map((tv) => tv.tv_id);
+
+    // Fetch details for each movie ID
+    const tvShowDetails = await Promise.all(
+      tvShowIds.map(async (tvShowId) => {
+        try {
+          const response = await axios.get(
+            `https://api.themoviedb.org/3/tv/${tvShowId}?api_key=${process.env.API_KEY}`
+          );
+          return response.data;
+        } catch (err) {
+          if (err.response && err.response.status === 404) {
+            console.warn(`Movie with ID ${tvShowId} not found.`);
+            return null; // Skip movie if not found
+          }
+          throw err; // Re-throw for unexpected errors
+        }
+      })
+    );
+
+    // Filter out any null entries (movies not found)
+    const validTvShow = tvShowDetails.filter((tv) => tv !== null);
+
+    res.status(200).json({ tvShows: validTvShow });
+  } catch (error) {
+    console.error('Error fetching group movies:', error.message);
+    next(error);
+  }
+};
+
 
 export const deleteMove = async (req, res, next) => {
   const { group_id } = req.params
@@ -258,6 +334,17 @@ export const takeMemberName = async(req, res, next) => {
   try{
     const {group_id} = req.params;
     const response = await getMember(group_id);
+    res.status(200).json(response.rows)
+  }catch(error){
+    console.log(error)
+    next(error)
+  }
+}
+
+export const takeUserGroup = async(req, res, next) => {
+  try{
+    const {user_id} = req.params;
+    const response = await getUserGroup(user_id);
     res.status(200).json(response.rows)
   }catch(error){
     console.log(error)

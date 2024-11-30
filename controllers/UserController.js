@@ -59,10 +59,11 @@ const confirmUser = async (req, res, next) => {
   }
 };
 
-const createUserObject = (user_id, token = undefined) => {
+const createUserObject = (user_id, token = undefined, is_admin) => {
   return {
     id: user_id,
     ...(token !== undefined && { token: token }),
+    is_admin: is_admin
   };
 };
 
@@ -84,7 +85,7 @@ const postLogin = async (req, res, next) => {
       return next(new ApiError("Wrong password", 401));
 
     const token = sign(req.body.user_name, process.env.JWT_SECRET_KEY);
-    return res.status(200).json(createUserObject(user.user_id, token));
+    return res.status(200).json(createUserObject(user.user_id, token, user.is_admin));
   } catch (error) {
     console.error(error);
     next(error);
@@ -138,9 +139,6 @@ const getUserProfile = async (req, res, next) => {
       return res.status(400).json({ message: "User ID is required." });
     }
 
-    // Fetch the user's group information
-    const resultGetGroup = await getUserGroup(user_id);
-    const group_id = resultGetGroup.rows[0]?.group_id;
 
     // Fetch user details
     const resultUser = await getUserId(user_id);
@@ -155,13 +153,6 @@ const getUserProfile = async (req, res, next) => {
       nick_name: user.nick_name,
       location: user.location,
     };
-
-    // If user belongs to a group, fetch the group name
-    if (group_id) {
-      const resultGetGroupName = await getGroupName(group_id);
-      const groupName = resultGetGroupName.rows[0]?.group_name || "Unknown Group";
-      response.group_name = groupName;
-    }
 
     // Respond with the user profile
     return res.status(200).json(response);
@@ -187,6 +178,23 @@ const editUserProfile = async (req, res, next) => {
   }
 };
 
+const getUserGroupName = async (req, res, next) => {
+  try {
+    const { group_id } = req.params;
+    if (!group_id) {
+      return res.status(400).json({ message: "Group ID is required" });
+    }
+    const result = await getGroupName(group_id);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+}
+
 export {
   postRegister,
   postLogin,
@@ -194,4 +202,5 @@ export {
   deleteUser,
   getUserProfile,
   editUserProfile,
+  getUserGroupName
 };
