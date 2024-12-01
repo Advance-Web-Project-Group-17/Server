@@ -38,7 +38,9 @@ export const authenticateToken = (req, res, next) => {
 
     // Verify the token
     console.log("JWT_SECRET in authMiddleware:", secretKey);
+    console.log('Incoming JWT:', token);
     const decoded = jwt.verify(token, secretKey);
+    console.log('Decoded: ', decoded);
 
     // Attach the decoded user information to the request object
     req.user = decoded; // e.g., { user_id: 123, email: "user@example.com" }
