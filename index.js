@@ -16,7 +16,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/user', userRouter);
-app.use("/movie", reviewRouter);
+app.use("/", reviewRouter);
+app.use("/movies", reviewRouter);
 app.use("/search", searchRouter);
 app.use("/group", groupRouter)
 

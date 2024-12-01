@@ -15,6 +15,7 @@
 
 import { ApiError } from "../helpers/ApiError.js"; // Custom error handling class
 import { insertReview, fetchReviewsByMovie } from "../models/ReviewModel.js"; // Database functions
+import { getUser } from "../models/User.js";
 
 /**
  * postReview - Controller function to add a review.
@@ -30,7 +31,12 @@ import { insertReview, fetchReviewsByMovie } from "../models/ReviewModel.js"; //
 export const postReview = async (req, res, next) => {
   try {
     // Extract user information from the token (added by auth middleware)
-    const { user_id, email } = req.user;
+    const user_info = await getUser(req.user); // Fetch user details by user_name
+        if (user_info.rows.length === 0) {
+            throw new Error(`User with username '${user_name}' not found.`);
+        }
+    const user_id = user_info.rows[0].user_id
+    console.log("user_id: ", user_id)
 
     // Extract review details from the request body
     const { movie_id, review_text, rating } = req.body;
