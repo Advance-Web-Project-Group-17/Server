@@ -1,5 +1,5 @@
 import express from "express"
-import { createGroup, takeAllGroup, takeGroupBasedOnId, deleteGroup, addMemberToGroup, removeMemberFromGroup, grantMemberAdmin, addMovieToGroup, getGroupMovies, deleteMove, takeMemberName, takeUserGroup, addTvShowToGroup, getGroupTvShow } from "../controllers/GroupController.js";
+import { createGroup, takeAllGroup, takeGroupBasedOnId, deleteGroup, addMemberToGroup, removeMemberFromGroup, grantMemberAdmin, addMovieToGroup, getGroupMovies, deleteMove, takeMemberName, takeUserGroup, addTvShowToGroup, getGroupTvShow, checkMemberInGroup, outGroup, checkIsAdmin } from "../controllers/GroupController.js";
 
 const groupRouter = express.Router();
 
@@ -44,6 +44,15 @@ groupRouter.delete("/deleteMovie/:group_id", deleteMove);
 
 //Get users' group
 groupRouter.get("/getUserGroup/:user_id", takeUserGroup);
+
+//Check member in group
+groupRouter.post("/checkMember/:group_id", checkMemberInGroup);
+
+//Out group
+groupRouter.delete("/outGroup/:group_id", outGroup);
+
+//Check is admin
+groupRouter.post("/checkAdmin", checkIsAdmin)
 
 export {groupRouter}
 

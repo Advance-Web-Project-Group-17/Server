@@ -5,7 +5,7 @@ const insertUser = async (email, user_name, hashedPassword) => {
 }
 
 const getUser = async (user_name) => {
-    return await query('select users.*, group_membership.is_admin from users join group_membership on users.user_id=group_membership.user_id where users.user_name = $1', [user_name]);    
+    return await query('select users.*, group_membership.is_admin from users left join group_membership on users.user_id=group_membership.user_id where users.user_name = $1', [user_name]);    
 }
 
 const getUserId = async (user_id) => {

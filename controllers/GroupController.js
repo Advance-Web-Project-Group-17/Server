@@ -13,9 +13,12 @@ import {
   getMember,
   getUserGroup,
   addTv,
-  getTv
+  getTv,
+  getMemberNickName, 
+  checkGroupAdmin
 } from "../models/GroupModel.js";
 import axios from "axios";
+import { checkNumberAdmin } from "../models/User.js";
 
 const api_key = process.env.API_KEY;
 
@@ -351,3 +354,85 @@ export const takeUserGroup = async(req, res, next) => {
     next(error)
   }
 }
+
+export const checkMemberInGroup = async(req, res, next) => {
+  try{
+    const { user_id } = req.body;
+    const { group_id } = req.params
+    const response = await getMemberNickName(user_id, group_id);
+    if(response.rows.length > 0){
+      res.status(200).json(response.rows)
+    } else {
+      res.status(404).json(false)
+    }
+  }catch(error){
+    console.log(error)
+    next(error)
+  }
+}
+
+export const outGroup = async (req, res, next) => {
+  try {
+    const { removed_id } = req.body;
+    const { group_id } = req.params;
+
+    console.log(typeof removed_id)
+    console.log("group" + group_id)
+    // Check the number of admins in the group
+    const resultCheckNumberAdmin = await checkNumberAdmin(group_id);
+
+    if (resultCheckNumberAdmin.rowCount === 0) {
+      return res.status(404).json({ message: "Group not found or no admins" });
+    }
+
+    if (resultCheckNumberAdmin.rows[0].count >= 2) {
+      // Remove the member directly if there are more than one admin
+      const response = await removeMember(group_id, removed_id);
+      return res.status(200).json({ message: "Member removed", rows: response.rows });
+    } else {
+      // Check if the user to be removed is an admin
+      const resultCheckAdmin = await checkGroupAdmin(removed_id, group_id);
+
+      if (resultCheckAdmin.rows.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (resultCheckAdmin.rows[0].is_admin === true) {
+        return res.status(400).json({ message: "You are the only admin of this group" });
+      } else {
+        // Remove the member
+        const response = await removeMember(group_id, removed_id);
+        return res.status(200).json({ message: "Member removed", rows: response.rows });
+      }
+    }
+  } catch (error) {
+    console.error("Error in outGroup:", error);
+    next(error);
+  }
+};
+
+export const checkIsAdmin = async (req, res, next) => {
+  try {
+    const { group_id, user_id } = req.body;
+
+    console.log("Received group_id:", group_id, "user_id:", user_id);
+
+    // Check if user is an admin in the group
+    const response = await checkGroupAdmin(user_id, group_id);
+
+    // Check if rows is not empty and then check the is_admin field
+    if (response.rows.length === 0) {
+      return res.status(404).json({ message: "User not found in the group" });
+    }
+
+    if (response.rows[0].is_admin === true) {
+      return res.status(200).json({ is_admin: true });
+    } else {
+      return res.status(400).json({ is_admin: false });
+    }
+  } catch (error) {
+    console.error("Error checking if user is admin:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
