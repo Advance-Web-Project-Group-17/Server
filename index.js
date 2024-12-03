@@ -5,6 +5,7 @@ import { userRouter } from "./routes/user.js"
 import { reviewRouter } from "./routes/review.js"
 import { searchRouter } from "./routes/search.js"
 import { groupRouter } from "./routes/group.js"
+import { favoritesRouter } from "./routes/favorites.js"
 
 const environment = process.env.NODE_ENV;
 dotenv.config();
@@ -20,6 +21,7 @@ app.use("/", reviewRouter);
 app.use("/movies", reviewRouter);
 app.use("/search", searchRouter);
 app.use("/group", groupRouter)
+app.use("/favorites", favoritesRouter)
 
 // Error handling middleware
 app.use((err, req, res, next) => {

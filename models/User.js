@@ -43,7 +43,15 @@ const deleteUserById = async (user_id) => {
   };
 
 const updateUserProfile = async (user_id, location, nick_name) => {
-    await query("update users set location = $1, nick_name = $2 where user_id = $3", [location, nick_name, user_id])
+    return await query("update users set location = $1, nick_name = $2 where user_id = $3", [location, nick_name, user_id])
 }
 
-export { insertUser, getUser, updateUserStatus, deleteUserById, getUserId, updateUserProfile, getUserGroup, checkIsAdmin, checkNumberAdmin, getGroupName }
+const shareProfile = async(user_id, is_shared) => {
+    return await query("update users set is_shared = $1 where user_id = $2", [is_shared, user_id])
+}
+
+const getSharedProfile = async() => {
+    return await query("select * from users where is_shared = true")
+}
+
+export { insertUser, getUser, updateUserStatus, deleteUserById, getUserId, updateUserProfile, getUserGroup, checkIsAdmin, checkNumberAdmin, getGroupName, shareProfile, getSharedProfile }

@@ -9,6 +9,8 @@ import {
   getUserGroup,
   checkIsAdmin,
   getGroupName,
+  shareProfile,
+  getSharedProfile
 } from "../models/User.js";
 import { compare, hash } from "bcrypt";
 import { ApiError } from "../helpers/ApiError.js";
@@ -195,6 +197,30 @@ const getUserGroupName = async (req, res, next) => {
   }
 }
 
+const updateSharedProfile = async(req, res, next) => {
+  try {
+    const {user_id, is_shared} = req.body
+    if (!is_shared || !user_id){
+      return res.status(400).json({message: "User ID and is_shared status are required."})
+    }
+    await shareProfile(user_id, is_shared)
+    res.status(200).json({message: "Profile sharing updated successfully."})
+  }catch(error){
+    console.log(error);
+    next(error);
+  }
+}
+
+const getUserSharedProfile = async(req, res, next) => {
+  try {
+    const result = await getSharedProfile();
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+}
+
 export {
   postRegister,
   postLogin,
@@ -202,5 +228,7 @@ export {
   deleteUser,
   getUserProfile,
   editUserProfile,
-  getUserGroupName
+  getUserGroupName,
+  updateSharedProfile,
+  getUserSharedProfile
 };

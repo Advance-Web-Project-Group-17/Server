@@ -50,3 +50,13 @@ create table group_movie (
 	CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES groups(group_id),
 	PRIMARY KEY (group_id, user_id)
 )
+
+CREATE TABLE favorites (
+    favorite_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    movie_id VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    type VARCHAR(50) NOT NULL CHECK (type IN ('movie', 'tv')), -- To distinguish between movies and TV shows
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+);

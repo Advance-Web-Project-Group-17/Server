@@ -1,5 +1,5 @@
 import express from "express"
-import { postRegister, postLogin, confirmUser, deleteUser, getUserProfile, editUserProfile, getUserGroupName } from "../controllers/UserController.js";
+import { postRegister, postLogin, confirmUser, deleteUser, getUserProfile, editUserProfile, getUserGroupName, updateSharedProfile, getUserSharedProfile } from "../controllers/UserController.js";
 
 const userRouter = express.Router();
 
@@ -23,5 +23,11 @@ userRouter.put("/profile/edit/:user_id", editUserProfile);
 
 //Get user's group name
 userRouter.get("/group/:user_id", getUserGroupName);
+
+//Update shared profile 
+userRouter.put("/profile/share", updateSharedProfile);
+
+//Get user's shared profile
+userRouter.get("/shared", getUserSharedProfile);
 
 export { userRouter };
