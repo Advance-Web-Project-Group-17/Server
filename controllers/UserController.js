@@ -97,40 +97,58 @@ const postLogin = async (req, res, next) => {
 const deleteUser = async (req, res, next) => {
   try {
     const { user_id } = req.params;
-
+    const { password } = req.body;
+    console.log("Password from request body:", password);
     if (!user_id) {
       return res.status(400).json({ message: "User ID is required" });
     }
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    const userFromDb = await getUserId(user_id);
+    if (!userFromDb || !userFromDb.rows.length) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user = userFromDb.rows[0];
     const resultGetUserGroup = await getUserGroup(user_id);
     const group_id = resultGetUserGroup.rows[0]?.group_id;
+
+    // Check the password before querying other information
+    if (!(await compare(password, user.password))) {
+      return next(new ApiError("Wrong password", 401));
+    }
+
     if (!group_id) {
+      // User has no group, delete directly
       await deleteUserById(user_id);
-      return res
-        .status(200)
-        .json({ message: "User deleted successfully" });
-    } else {
-      const resultCheckAdmin = await checkNumberAdmin(group_id);
-      const resultCheckIsAdmin = await checkIsAdmin(user_id);
-      if(resultCheckIsAdmin.rows[0].is_admin === true){
-        if (resultCheckAdmin.rows[0].count > 1) {
-          const result = await deleteUserById(user_id);
-          if (result.rowCount === 0) {
-            return res.status(404).json({ message: "User not found" });
-          }
-          res.status(200).json({ message: "User deleted successfully" });
-        } else {
-          return res.status(400).json({ message: "Admin cannot be deleted" });
-        }
-      }else{
+      return res.status(200).json({ message: "User deleted successfully" });
+    }
+
+    const resultCheckAdmin = await checkNumberAdmin(group_id);
+    const resultCheckIsAdmin = await checkIsAdmin(user_id);
+
+    if (resultCheckIsAdmin.rows[0].is_admin) {
+      // If user is admin, check if there are other admins in the group
+      if (resultCheckAdmin.rows[0].count > 1) {
         await deleteUserById(user_id);
-        res.status(200).json({message: "User deleted successfully"})
+        return res.status(200).json({ message: "User deleted successfully" });
+      } else {
+        return res.status(400).json({ message: "Admin cannot be deleted" });
       }
+    } else {
+      // If not an admin, delete user
+      await deleteUserById(user_id);
+      return res.status(200).json({ message: "User deleted successfully" });
     }
   } catch (error) {
     console.error(error);
     next(error); // Pass error to error handler middleware
   }
 };
+
 
 const getUserProfile = async (req, res, next) => {
   try {

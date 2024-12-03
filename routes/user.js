@@ -13,7 +13,7 @@ userRouter.post("/login", postLogin);
 userRouter.get("/confirm/:token", confirmUser);
 
 //Delete user
-userRouter.delete("/delete/:user_id", deleteUser);
+userRouter.post("/delete/:user_id", deleteUser);
 
 //Get user's profile
 userRouter.get("/profile/:user_id", getUserProfile);
