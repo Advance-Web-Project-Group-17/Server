@@ -7,6 +7,7 @@ create table users (
     nick_name varchar(255),
     is_confirmed BOOLEAN DEFAULT FALSE,
     location varchar(50),
+    is_shared BOOLEAN DEFAULT FALSE
 ) 
 CREATE TABLE groups (
     group_id SERIAL PRIMARY KEY,
