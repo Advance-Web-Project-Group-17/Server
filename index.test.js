@@ -97,4 +97,34 @@ describe("POST register", () => {
       expect(data).to.include.all.keys("message");
     });
   });
+
+  describe("Browsing reviews", () => {
+    const movieId = 211039
+    it("should retrieve reviews for a specific movie", async () => {
+      const response = await fetch(`${baseUrl}/movies/${movieId}/reviews`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
   
+      const data = await response.json();
+  
+      expect(response.status).to.equal(200);
+      expect(data).to.include.all.keys("reviews");
+    })
+  })
+  
+  describe("Browsing favorites", () => {
+    const user_id = 4
+    it("should retrieve favorites for a specific user", async () => {
+      const response = await fetch(`${baseUrl}/favorites/${user_id}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    })
+  
+      const data = await response.json();
+  
+      expect(response.status).to.equal(200);
+      expect(data).to.include.all.keys("movies", "tvShows");
+    })
+  })
+    
