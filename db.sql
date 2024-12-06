@@ -1,3 +1,4 @@
+-- Active: 1733396626466@@group-17-movieapp.postgres.database.azure.com@5432@movieapp
 create table users (
     user_id serial primary key,
     user_name varchar(100) unique not null,
@@ -8,7 +9,8 @@ create table users (
     is_confirmed BOOLEAN DEFAULT FALSE,
     location varchar(50),
     is_shared BOOLEAN DEFAULT FALSE
-) 
+);
+
 CREATE TABLE groups (
     group_id SERIAL PRIMARY KEY,
     group_name VARCHAR(255) UNIQUE NOT NULL
@@ -22,13 +24,6 @@ CREATE TABLE group_membership (
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id),
     CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES groups(group_id),
     PRIMARY KEY (group_id, user_id)
-);
-
-create table notification (
-	noti_id serial primary key,
-	user_id int not null,
-	content varchar(255),
-	constraint fk_user foreign key (user_id) references users(user_id)
 );
 
 CREATE TABLE reviews (

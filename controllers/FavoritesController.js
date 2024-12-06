@@ -5,7 +5,7 @@ import {
   toggleFavoriteSharing,
   deleteFavorite,
   isFavoriteExists,
-} from "../models/favoritesModel.js";
+} from "../models/FavoritesModel.js";
 import axios from "axios";
 import { ApiError } from "../helpers/ApiError.js";
 
