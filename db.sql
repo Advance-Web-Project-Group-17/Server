@@ -42,9 +42,18 @@ create table group_movie (
 	group_id int not null,
 	user_id int not null,
 	movie_id int unique not null,
+    added_by int not null,
 	CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id),
-	CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES groups(group_id),
-	PRIMARY KEY (group_id, user_id)
+	CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES groups(group_id)
+)
+
+create table group_tv (
+	group_id int not null,
+	user_id int not null,
+	tv_id int unique not null,
+    added_by int not null,
+	CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+	CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES groups(group_id)
 )
 
 CREATE TABLE favorites (

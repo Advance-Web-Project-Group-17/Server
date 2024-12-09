@@ -70,21 +70,22 @@ const removeMember = async (group_id, removed_id) => {
   );
 };
 
-//Add movie
-const addMovie = async (group_id, movie_id, user_id) => {
-  return await query(
-    "insert into group_movie (group_id, movie_id, user_id) values ($1, $2, $3)",
-    [group_id, movie_id, user_id]
-  );
+// Add Movie to Group
+const addMovie = async (group_id, movie_id, user_id, added_by = user_id) => {
+    return await query(
+      "INSERT INTO group_movie (group_id, movie_id, user_id, added_by) VALUES ($1, $2, $3, $4)",
+      [group_id, movie_id, user_id, added_by]
+    );
 };
 
-//Add tv show
-const addTv = async (group_id, tv_id, user_id) => {
-  return await query(
-    "insert into group_tv (group_id, tv_id, user_id) values ($1, $2, $3)",
-    [group_id, tv_id, user_id]
-  );
+// Add TV Show to Group
+const addTv = async (group_id, tv_id, user_id, added_by = user_id) => {
+    return await query(
+      "INSERT INTO group_tv (group_id, tv_id, user_id, added_by) VALUES ($1, $2, $3, $4)",
+      [group_id, tv_id, user_id, added_by]
+    );
 };
+
 
 //Get movie
 const getMovie = async (group_id) => {
@@ -103,6 +104,14 @@ const removeMovie = async (group_id, movie_id) => {
   return await query(
     "delete from group_movie where group_id = $1 and movie_id = $2 returning group_id",
     [group_id, movie_id]
+  );
+};
+
+//Remove tv show
+const removeTv = async (group_id, tv_id) => {
+  return await query(
+    "delete from group_tv where group_id = $1 and tv_id = $2 returning group_id",
+    [group_id, tv_id]
   );
 };
 
@@ -129,6 +138,21 @@ const checkGroupAdmin = async (user_id, group_id) => {
       [user_id, group_id]
     );
   };
+
+  const addedByMovie = async (movie_id, group_id) => {
+    return await query(
+      "SELECT added_by FROM group_movie WHERE movie_id = $1 AND group_id = $2",
+      [movie_id, group_id]
+    );
+  };
+  
+  const addedByTv = async (tv_id, group_id) => {
+    return await query(
+      "SELECT added_by FROM group_tv WHERE tv_id = $1 AND group_id = $2",
+      [tv_id, group_id]
+    );
+  };
+  
 export {
   getGroup,
   addGroup,
@@ -147,4 +171,7 @@ export {
   getTv,
   getMemberNickName,
   checkGroupAdmin,
+  removeTv,
+  addedByMovie,
+  addedByTv
 };

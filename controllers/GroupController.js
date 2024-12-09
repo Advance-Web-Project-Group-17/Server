@@ -14,8 +14,11 @@ import {
   getUserGroup,
   addTv,
   getTv,
-  getMemberNickName, 
-  checkGroupAdmin
+  getMemberNickName,
+  checkGroupAdmin,
+  removeTv,
+  addedByMovie,
+  addedByTv,
 } from "../models/GroupModel.js";
 import axios from "axios";
 import { checkNumberAdmin } from "../models/User.js";
@@ -126,7 +129,7 @@ export const removeMemberFromGroup = async (req, res, next) => {
         .json({ message: "group_id, user_id, and removed_id are required" });
     }
 
-    if(removed_id == user_id) {
+    if (removed_id == user_id) {
       return res.status(400).json({ message: "You cannot remove yourself" });
     }
 
@@ -246,8 +249,6 @@ export const addTvShowToGroup = async (req, res, next) => {
   }
 };
 
-
-
 export const getGroupMovies = async (req, res, next) => {
   const { group_id } = req.params;
 
@@ -279,7 +280,7 @@ export const getGroupMovies = async (req, res, next) => {
 
     res.status(200).json({ movies: validMovies });
   } catch (error) {
-    console.error('Error fetching group movies:', error.message);
+    console.error("Error fetching group movies:", error.message);
     next(error);
   }
 };
@@ -315,69 +316,104 @@ export const getGroupTvShow = async (req, res, next) => {
 
     res.status(200).json({ tvShows: validTvShow });
   } catch (error) {
-    console.error('Error fetching group movies:', error.message);
+    console.error("Error fetching group movies:", error.message);
+    next(error);
+  }
+};
+
+export const deleteMove = async (req, res, next) => {
+  const { group_id } = req.params;
+  const { movie_id, user_id } = req.body;
+
+  try {
+    // Check if the movie was added by the user
+    const result = await addedByMovie(movie_id, group_id);
+
+    if (result.rows.length > 0 && result.rows[0].added_by === user_id) {
+      const response = await removeMovie(group_id, movie_id);
+      return res.status(200).json({
+        message: "Movie removed from group successfully",
+        group: response.rows[0]?.group_id,
+      });
+    }
+
+    res.status(403).json({ message: "You are not allowed to remove this movie" });
+  } catch (error) {
+    console.error("Error deleting movie:", error);
     next(error);
   }
 };
 
 
-export const deleteMove = async (req, res, next) => {
-  const { group_id } = req.params
-  const { movie_id } = req.body
-  try{
-    const response = await removeMovie(group_id, movie_id);
-    res.status(200).json({message: "Movie removed from group successfully", group: response.rows[0].group_id})
-  }catch(error){
-    console.log(error)
-    next(error)
-  } 
-}
+export const deleteTvShow = async (req, res, next) => {
+  const { group_id } = req.params;
+  const { tv_id, user_id } = req.body;
 
-export const takeMemberName = async(req, res, next) => {
-  try{
-    const {group_id} = req.params;
-    const response = await getMember(group_id);
-    res.status(200).json(response.rows)
-  }catch(error){
-    console.log(error)
-    next(error)
-  }
-}
+  try {
+    // Check if the TV show was added by the user
+    const result = await addedByTv(tv_id, group_id);
 
-export const takeUserGroup = async(req, res, next) => {
-  try{
-    const {user_id} = req.params;
-    const response = await getUserGroup(user_id);
-    res.status(200).json(response.rows)
-  }catch(error){
-    console.log(error)
-    next(error)
-  }
-}
-
-export const checkMemberInGroup = async(req, res, next) => {
-  try{
-    const { user_id } = req.body;
-    const { group_id } = req.params
-    const response = await getMemberNickName(user_id, group_id);
-    if(response.rows.length > 0){
-      res.status(200).json(response.rows)
-    } else {
-      res.status(404).json(false)
+    if (result.rows.length > 0 && result.rows[0].added_by === user_id) {
+      const response = await removeTv(group_id, tv_id);
+      return res.status(200).json({
+        message: "TV show removed from group successfully",
+        group: response.rows[0]?.group_id,
+      });
     }
-  }catch(error){
-    console.log(error)
-    next(error)
+
+    res.status(403).json({ message: "You are not allowed to remove this TV show" });
+  } catch (error) {
+    console.error("Error deleting TV show:", error);
+    next(error);
   }
-}
+};
+
+
+export const takeMemberName = async (req, res, next) => {
+  try {
+    const { group_id } = req.params;
+    const response = await getMember(group_id);
+    res.status(200).json(response.rows);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const takeUserGroup = async (req, res, next) => {
+  try {
+    const { user_id } = req.params;
+    const response = await getUserGroup(user_id);
+    res.status(200).json(response.rows);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const checkMemberInGroup = async (req, res, next) => {
+  try {
+    const { user_id } = req.body;
+    const { group_id } = req.params;
+    const response = await getMemberNickName(user_id, group_id);
+    if (response.rows.length > 0) {
+      res.status(200).json(response.rows);
+    } else {
+      res.status(404).json(false);
+    }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 
 export const outGroup = async (req, res, next) => {
   try {
     const { removed_id } = req.body;
     const { group_id } = req.params;
 
-    console.log(typeof removed_id)
-    console.log("group" + group_id)
+    console.log(typeof removed_id);
+    console.log("group" + group_id);
     // Check the number of admins in the group
     const resultCheckNumberAdmin = await checkNumberAdmin(group_id);
 
@@ -388,7 +424,9 @@ export const outGroup = async (req, res, next) => {
     if (resultCheckNumberAdmin.rows[0].count >= 2) {
       // Remove the member directly if there are more than one admin
       const response = await removeMember(group_id, removed_id);
-      return res.status(200).json({ message: "Member removed", rows: response.rows });
+      return res
+        .status(200)
+        .json({ message: "Member removed", rows: response.rows });
     } else {
       // Check if the user to be removed is an admin
       const resultCheckAdmin = await checkGroupAdmin(removed_id, group_id);
@@ -398,11 +436,15 @@ export const outGroup = async (req, res, next) => {
       }
 
       if (resultCheckAdmin.rows[0].is_admin === true) {
-        return res.status(400).json({ message: "You are the only admin of this group" });
+        return res
+          .status(400)
+          .json({ message: "You are the only admin of this group" });
       } else {
         // Remove the member
         const response = await removeMember(group_id, removed_id);
-        return res.status(200).json({ message: "Member removed", rows: response.rows });
+        return res
+          .status(200)
+          .json({ message: "Member removed", rows: response.rows });
       }
     }
   } catch (error) {
@@ -435,4 +477,3 @@ export const checkIsAdmin = async (req, res, next) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
