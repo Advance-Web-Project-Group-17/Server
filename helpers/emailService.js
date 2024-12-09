@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 
 export const sendConfirmationEmail = async (email, token) => {
+  const baseUrl = 'http://localhost:3001'
   const transporter = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
@@ -14,7 +15,7 @@ export const sendConfirmationEmail = async (email, token) => {
 
   console.log(process.env.EMAIL_USER, process.env.EMAIL_PASS);
 
-  const confirmationUrl = `${process.env.BASE_URL}/user/confirm/${token}`;
+  const confirmationUrl = `${baseUrl}/user/confirm/${token}`;
   const mailOptions = {
     from: "group17Oamk@gmail.com",
     to: email,

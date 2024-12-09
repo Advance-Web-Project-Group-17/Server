@@ -34,6 +34,11 @@ app.use((err, req, res, next) => {
   });
 });
 
+//Test is the azure working
+app.get("/", (req, res) => {
+  res.send("Server is running");
+})
+
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
