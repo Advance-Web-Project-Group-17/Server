@@ -14,7 +14,9 @@ const pool = new Pool({
   database: process.env.NODE_ENV === 'test' ? process.env.TEST_DB_NAME : process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
-  ssl: process.env.SSL 
+  ssl: {
+    rejectUnauthorized: false
+  } 
 });
 
 const query = (sql, values = []) => {
