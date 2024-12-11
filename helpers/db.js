@@ -4,7 +4,8 @@ import pkg from 'pg';
 const { Pool } = pkg;
 
 dotenv.config();  
-console.log("Environment:", process.env.NODE_ENV);  // Add this line to verify
+console.log("Environment:", process.env.NODE_ENV);
+console.log("Host", process.env.DB_HOST) 
 
 
 const pool = new Pool({
