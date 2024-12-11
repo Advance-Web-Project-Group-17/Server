@@ -37,6 +37,7 @@ const deleteUserById = async (user_id) => {
     await query("DELETE FROM group_membership WHERE user_id = $1", [user_id]);
     await query("DELETE FROM notification WHERE user_id = $1", [user_id]);
     await query("DELETE FROM reviews WHERE user_id = $1", [user_id]);
+    await query("DELETE FROM favorites WHERE user_id = $1", [user_id]);
   
     // Finally, delete the user
     return await query("DELETE FROM users WHERE user_id = $1", [user_id]);
