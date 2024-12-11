@@ -35,7 +35,6 @@ const checkIsAdmin = async(user_id) => {
 const deleteUserById = async (user_id) => {
     // Delete related records first to ensure foreign key constraints are not violated
     await query("DELETE FROM group_membership WHERE user_id = $1", [user_id]);
-    await query("DELETE FROM notification WHERE user_id = $1", [user_id]);
     await query("DELETE FROM reviews WHERE user_id = $1", [user_id]);
     await query("DELETE FROM favorites WHERE user_id = $1", [user_id]);
   
