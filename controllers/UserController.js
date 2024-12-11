@@ -18,6 +18,36 @@ import { sendConfirmationEmail } from "../helpers/emailService.js";
 import jwt from "jsonwebtoken";
 const { sign } = jwt;
 
+// const postRegister = async (req, res, next) => {
+//   try {
+//     const { email, user_name, password } = req.body;
+//     if (!email || !password || password.length < 8) {
+//       return res.status(400).json({ error: "Invalid email or password" });
+//     }
+
+//     const hashedPassword = await hash(password, 10);
+//     const userFromDb = await insertUser(email, user_name, hashedPassword);
+//     const user = userFromDb.rows[0];
+
+//     // Generate a confirmation token
+//     const token = jwt.sign(
+//       { id: user.user_id, email },
+//       process.env.JWT_SECRET_KEY,
+//       { expiresIn: "1h" }
+//     ); //user data saved in sessionStorage will expired in 1h
+//     await sendConfirmationEmail(email, token);
+
+//     return res.status(201).json({
+//       message: "Registration successful. Please confirm your email.",
+//       user_id: user.user_id,
+//       user_name: user.user_name,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// };
+
 const postRegister = async (req, res, next) => {
   try {
     const { email, user_name, password } = req.body;
@@ -29,12 +59,11 @@ const postRegister = async (req, res, next) => {
     const userFromDb = await insertUser(email, user_name, hashedPassword);
     const user = userFromDb.rows[0];
 
-    // Generate a confirmation token
     const token = jwt.sign(
       { id: user.user_id, email },
       process.env.JWT_SECRET_KEY,
       { expiresIn: "1h" }
-    ); //user data saved in sessionStorage will expired in 1h
+    );
     await sendConfirmationEmail(email, token);
 
     return res.status(201).json({
@@ -43,10 +72,11 @@ const postRegister = async (req, res, next) => {
       user_name: user.user_name,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error in postRegister:", error.message);
     next(error);
   }
 };
+
 
 const confirmUser = async (req, res, next) => {
   try {
