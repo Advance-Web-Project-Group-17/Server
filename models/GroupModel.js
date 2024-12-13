@@ -11,7 +11,7 @@ const getGroup = async (group_id) => {
 //Create group
 const addGroup = async (group_name) => {
   return await query(
-    "insert into groups (group_name) values ($1) returning group_id",
+    "insert into groups (group_name) values ($1) returning *",
     [group_name]
   );
 };
